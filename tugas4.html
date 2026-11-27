@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tugas 4 — Sistem KUB | Natanael Sitorus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --laut:#0c3b47; --laut-2:#14566a; --ombak:#e8f1f2; --kertas:#f7fafa; --garis:#d3e0e2;
+  --teks:#16282d; --redam:#587178; --pelampung:#e8a317; --putih:#fff; --w:270px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Figtree',system-ui,sans-serif;background:var(--kertas);color:var(--teks);line-height:1.6}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--pelampung);outline-offset:2px}
+
+/* Sidebar */
+.side{position:fixed;inset:0 auto 0 0;width:var(--w);background:var(--laut);color:#d9e8ea;overflow-y:auto;z-index:40;padding:20px 14px 28px;transition:transform .25s}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 8px 18px;border-bottom:1px solid rgba(255,255,255,.14);margin-bottom:14px}
+.brand b{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--pelampung);color:var(--laut);font-size:14px;flex-shrink:0}
+.brand span{font-weight:700;color:#fff;font-size:16px;line-height:1.25}
+.brand small{display:block;font-weight:400;font-size:12px;color:#a9c4c9}
+.side h2{font-size:12.5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:#8fb2b8;padding:14px 10px 6px}
+.side a{display:block;padding:9px 12px;border-radius:8px;text-decoration:none;font-size:14.5px;color:#d9e8ea;margin-bottom:2px}
+.side a:hover{background:rgba(255,255,255,.08)}
+.side a[aria-current="page"]{background:var(--ombak);color:var(--laut);font-weight:600;box-shadow:inset 4px 0 0 var(--pelampung)}
+.side a.back-home{background:rgba(232,163,23,.16);color:#ffd57e;font-weight:600;border:1px solid rgba(232,163,23,.35);margin-bottom:6px}
+.side a.back-home:hover{background:var(--pelampung);color:var(--laut)}
+.burger{display:none;position:fixed;top:10px;left:10px;z-index:50;width:44px;height:44px;border:0;border-radius:10px;background:var(--laut);color:#fff;font-size:22px;cursor:pointer}
+.scrim{display:none}
+
+/* Konten */
+main{margin-left:var(--w);padding:32px clamp(16px,4vw,48px) 64px;max-width:1180px}
+.head{margin-bottom:22px;max-width:75ch}
+.badge{display:inline-block;background:var(--ombak);color:var(--laut);border:1px solid var(--garis);padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:600;margin-bottom:8px}
+.head h1{font-size:clamp(24px,3.2vw,32px);color:var(--laut);line-height:1.2;margin-bottom:6px}
+.head p{color:var(--redam)}
+
+.blok{margin-bottom:26px}
+.blok h3{font-size:16px;color:var(--laut-2);margin-bottom:10px}
+.frame{border:1px solid var(--garis);background:var(--putih);border-radius:8px;overflow:hidden}
+.frame iframe{display:block;width:100%;height:100%;border:0}
+.kosong{display:grid;place-items:center;text-align:center;gap:6px;padding:28px;min-height:190px;background:repeating-linear-gradient(135deg,var(--ombak) 0 12px,#f1f7f8 12px 24px);color:var(--redam);font-size:14px}
+.kosong code{background:var(--putih);padding:2px 8px;border-radius:4px;border:1px solid var(--garis);color:var(--laut)}
+
+.aksi{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 22px}
+.tombol{display:inline-block;padding:10px 18px;border-radius:6px;font-weight:600;font-size:14.5px;text-decoration:none;border:2px solid var(--laut);color:var(--laut);background:transparent}
+.tombol:hover{background:var(--laut);color:#fff}
+.tombol.utama{background:var(--laut);color:#fff}
+.tombol.utama:hover{background:var(--laut-2);border-color:var(--laut-2)}
+.tombol.mati{border-style:dashed;border-color:var(--garis);color:var(--redam);pointer-events:none}
+
+/* Kartu & Tabel */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-bottom:26px}
+.card{background:var(--putih);border:1px solid var(--garis);border-radius:8px;padding:18px}
+.card small{color:var(--redam);font-size:12.5px;display:block;margin-bottom:4px}
+.card strong{color:var(--laut);font-size:16px;display:block;margin-bottom:6px}
+.card p{font-size:14px;color:var(--teks)}
+
+.alur{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--putih);border:1px solid var(--garis);padding:16px;border-radius:8px;margin-bottom:26px;font-size:14px}
+.alur span{background:var(--ombak);color:var(--laut);font-weight:600;padding:6px 12px;border-radius:6px}
+.alur b{color:var(--pelampung)}
+
+.rekap-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;padding:12px 14px;background:#f1f7f8;border-bottom:1px solid var(--garis);font-size:13.5px}
+.rekap-bar strong{color:var(--laut)}
+.rekap-note{font-size:12.5px;color:var(--redam);padding:10px 14px;background:#fafdfd;border-top:1px solid var(--garis)}
+.btn-mini{padding:5px 12px;border-radius:6px;border:1px solid var(--laut);background:var(--putih);color:var(--laut);font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.btn-mini:hover{background:var(--laut);color:#fff}
+
+.tbl-wrap{overflow-x:auto;background:var(--putih);border:1px solid var(--garis);border-radius:8px;margin-bottom:26px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;text-align:left}
+th,td{padding:10px 14px;border-bottom:1px solid var(--garis);vertical-align:top}
+th{background:var(--ombak);color:var(--laut);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+
+@media (max-width:760px){
+  .side{transform:translateX(-100%);box-shadow:0 0 40px rgba(0,0,0,.35)}
+  body.buka .side{transform:none}
+  body.buka .scrim{display:block;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:30}
+  .burger{display:block}
+  main{margin-left:0;padding-top:68px}
+  .tombol{width:100%;text-align:center}
+}
+</style>
+</head>
+<body>
+<button class="burger" id="burger" aria-label="Buka menu" aria-controls="side" aria-expanded="false">&#9776;</button>
+<div class="scrim" id="scrim"></div>
+<nav class="side" id="side" aria-label="Menu utama"></nav>
+<main id="main" tabindex="-1"></main>
+
+<script>
+const CONFIG = {
+  nama: "Natanael Sitorus",
+  nim: "2410715110011",
+  kelompok: "Kelompok 1 — KUB",
+  regulasi: "PERKA BRSDM Nomor 4/PER-BRSDM/2019",
+  portalKelompokUrl: "",
+
+  /* Navigasi ke halaman-halaman website utama */
+  menuUtama: [
+    { label: "← Kembali ke Home", url: "index.html", isHome: true },
+    { label: "Biodata", url: "biodata.html" },
+    { label: "Tugas 1 (Google Form)", url: "tugas1.html" },
+    { label: "Tugas 2 (Looker Studio)", url: "tugas2.html" },
+    { label: "Tugas 3 (Looker Studio)", url: "tugas3.html" }
+  ],
+
+  halaman: [
+    {
+      id: "beranda",
+      grup: "Ringkasan Tugas 4",
+      judul: "Beranda & Alur Sistem",
+      desc: "Sistem Informasi Administrasi KUB (Tamu Kelompok, Agenda Surat, dan Notulen Rapat Kelompok) berbasis Google Form dan Google Spreadsheet."
+    },
+    {
+      id: "tamu",
+      grup: "Modul Tugas Individu",
+      judul: "1. Tamu Kelompok",
+      desc: "Pencatatan data tamu yang mengunjungi KUB beserta instansi, keperluan, serta kesan dan pesan (PERKA BRSDM No. 4/PER-BRSDM/2019).",
+      aksi: [
+        {
+          label: "Buka Google Form Tamu",
+          url: "https://docs.google.com/forms/d/e/1FAIpQLSc10cLW_DYcVLLMwXRL_uTFNnWZ0jGSOJmhVoCeRSUXzkXljw/viewform?usp=sharing&ouid=100941845309143988941",
+          utama: true
+        },
+        {
+          label: "Lihat Google Sheet Tamu",
+          url: ""
+        }
+      ],
+      formEmbed: "https://docs.google.com/forms/d/e/1FAIpQLSc10cLW_DYcVLLMwXRL_uTFNnWZ0jGSOJmhVoCeRSUXzkXljw/viewform?embedded=true",
+      sheetEmbed: "",
+      rekapData: {
+        kolom: ["No", "Timestamp", "Token & Nama KUB", "Nama Tamu", "Jabatan / Instansi", "No. HP", "Tgl Datang & Pergi", "Tujuan / Keperluan"],
+        baris: [
+          [
+            "1",
+            "11/22/2026 21:45:01",
+            "KUB-14Adr / KUB INTIMUNG TAKA",
+            "Rahmat Hidayat",
+            "Koordinator Lapangan / BPP Bunyu",
+            "085245678910",
+            "14/11/2026 - 14/11/2026",
+            "Pendataan komoditas unggulan cumi-cumi, kepiting, dan udang. Pertahankan kekompakan anggota dalam pelaporan bulanan."
+          ],
+          [
+            "2",
+            "11/22/2026 21:47:47",
+            "KUB-13Jun / KUB USAHA MAKMUR",
+            "Hendra Wijaya",
+            "Penyuluh Perikanan / DKP Bangkalan",
+            "081234567801",
+            "10/11/2026 - 11/11/2026",
+            "Pembinaan administrasi dan pengecekan kapal perahu. Administrasi kelompok cukup tertib, tingkatkan pencatatan hasil tangkapan."
+          ]
+        ]
+      },
+      kolomStandar: [
+        "Timestamp",
+        "Token & Nama KUB (contoh: KUB-13Jun / KUB USAHA MAKMUR)",
+        "Nama Tamu",
+        "Jabatan / Instansi",
+        "No. HP",
+        "Tgl Datang & Pergi",
+        "Tujuan / Keperluan"
+      ]
+    },
+    {
+      id: "agenda-surat",
+      grup: "Modul Tugas Individu",
+      judul: "2. Agenda Surat",
+      desc: "Pengelolaan arus surat masuk dan surat keluar kelompok untuk mempermudah pengarsipan dan penelusuran tindak lanjut surat.",
+      aksi: [
+        {
+          label: "Buka Google Form Surat",
+          url: "https://docs.google.com/forms/d/e/1FAIpQLSc4haKdGX5uvAewkF4MGFnEqlDhfKropGEa-RoNbjVPxTsyzw/viewform?usp=header",
+          utama: true
+        },
+        {
+          label: "Lihat Google Sheet Surat",
+          url: ""
+        }
+      ],
+      formEmbed: "https://docs.google.com/forms/d/e/1FAIpQLSc4haKdGX5uvAewkF4MGFnEqlDhfKropGEa-RoNbjVPxTsyzw/viewform?embedded=true",
+      sheetEmbed: "",
+      rekapData: {
+        kolom: ["No", "Timestamp", "Token & Nama KUB", "Jenis Agenda", "Tgl Masuk/Keluar", "Nomor Surat", "Tanggal Surat", "Pengirim / Tujuan", "Perihal", "Disposisi / Tindak Lanjut"],
+        baris: [
+          [
+            "1",
+            "11/22/2026 22:05:42",
+            "KUB-14Adr / KUB INTIMUNG TAKA",
+            "Surat Masuk",
+            "11/13/2026",
+            "089/BPP-BNY/XI/2026",
+            "11/14/2026",
+            "Balai Penyuluhan Perikanan Bunyu",
+            "Pemberitahuan Jadwal Pendampingan Kelas Kelompok",
+            "Dijadwalkan pertemuan anggota pada minggu ke-3 November"
+          ],
+          [
+            "2",
+            "11/22/2026 22:11:35",
+            "KUB-13Jun / KUB USAHA MAKMUR",
+            "Surat Masuk",
+            "11/5/2026",
+            "523/114/DKP-BKL/2026",
+            "11/3/2026",
+            "Dinas Perikanan Kab. Bangkalan",
+            "Undangan Bimtek Penanganan Ikan Selar Hasil Tangkapan",
+            "Diteruskan ke Ketua (Junaidi) untuk menugaskan 2 anggota hadir"
+          ]
+        ]
+      },
+      kolomStandar: [
+        "Timestamp",
+        "Token & Nama KUB (contoh: KUB-13Jun / KUB USAHA MAKMUR)",
+        "Jenis Agenda",
+        "Tgl Masuk/Keluar",
+        "Nomor Surat",
+        "Tanggal Surat",
+        "Pengirim / Tujuan",
+        "Perihal",
+        "Disposisi / Tindak Lanjut"
+      ]
+    },
+    {
+      id: "notulen",
+      grup: "Modul Tugas Individu",
+      judul: "3. Notulen Rapat Kelompok",
+      desc: "Dokumentasi jalannya rapat atau pertemuan kelompok termasuk pokok materi, usulan anggota, kesimpulan, rencana tindak lanjut, serta survei tingkat kepuasan rapat.",
+      aksi: [
+        {
+          label: "Buka Google Form Notulen",
+          url: "https://docs.google.com/forms/d/e/1FAIpQLSf6MF9IZ3aI8pCJUvdXxrJA9ciHd7LOKm9M9Lt9C5Q2NPzkcQ/viewform?usp=dialog",
+          utama: true
+        },
+        {
+          label: "Lihat Google Sheet Notulen",
+          url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQV7ILIgzYujGSV9dqHubJbWGUAaKXrWCmlPk1b0lN2iBVosr6r2Q4o2QsjfmM7nAoISaWIH-UKsiF3/pubhtml?widget=true&headers=false"
+        },
+        {
+          label: "Buka Form Tingkat Kepuasan",
+          url: "https://docs.google.com/forms/d/e/1FAIpQLScctwVpKOhgppYdQDtuQaCfvoN7ct264qBTtq_OY93GWWjXzw/viewform?usp=sharing&ouid=100941845309143988941"
+        },
+        {
+          label: "Lihat Sheet Tingkat Kepuasan",
+          url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQoPU7hFjGvC8cOsEDKlmSMCggPkocaXBf5ZYB45TchEOe5w1Mw4wpGhq_iKSZeS4PoYd2Cr4cJ8vJ1/pubhtml?widget=true&headers=false"
+        },
+        {
+          label: "Buka Looker Studio Kepuasan",
+          url: ""
+        }
+      ],
+      formEmbed: "https://docs.google.com/forms/d/e/1FAIpQLSf6MF9IZ3aI8pCJUvdXxrJA9ciHd7LOKm9M9Lt9C5Q2NPzkcQ/viewform?embedded=true",
+      sheetEmbed: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQV7ILIgzYujGSV9dqHubJbWGUAaKXrWCmlPk1b0lN2iBVosr6r2Q4o2QsjfmM7nAoISaWIH-UKsiF3/pubhtml?widget=true&headers=false",
+      rekapData: {
+        kolom: ["No", "Timestamp", "Token & Nama KUB", "Tanggal Rapat", "Nama Kegiatan", "Pembicara", "Jabatan", "Pokok-Pokok Materi / Usulan", "Kesimpulan / Tindak Lanjut"],
+        baris: [
+          [
+            "1",
+            "11/22/2026 22:07:56",
+            "KUB-14Adr / KUB INTIMUNG TAKA",
+            "11/15/2026",
+            "Rapat Persiapan Penilaian Kelas KUB",
+            "Adria Saputra",
+            "Ketua Kelompok",
+            "Kelengkapan buku administrasi (tamu, surat, notulen) dan pembaharuan AD/ART",
+            "Semua anggota wajib melengkapi data administrasi sebelum kunjungan penyuluh"
+          ],
+          [
+            "2",
+            "11/22/2026 22:10:34",
+            "KUB-13Jun / KUB USAHA MAKMUR",
+            "11/8/2026",
+            "Rapat Rutin Bulanan KUB",
+            "Junaidi",
+            "Ketua Kelompok",
+            "Evaluasi hasil tangkapan ikan selar dan perbaikan jaring biasa milik anggota",
+            "Disepakati iuran perbaikan jaring dan pencatatan harian hasil tangkapan oleh Nanang"
+          ]
+        ]
+      },
+      kepuasan: {
+        formEmbed: "https://docs.google.com/forms/d/e/1FAIpQLScctwVpKOhgppYdQDtuQaCfvoN7ct264qBTtq_OY93GWWjXzw/viewform?embedded=true",
+        sheetEmbed: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQoPU7hFjGvC8cOsEDKlmSMCggPkocaXBf5ZYB45TchEOe5w1Mw4wpGhq_iKSZeS4PoYd2Cr4cJ8vJ1/pubhtml?widget=true&headers=false",
+        lookerEmbed: ""
+      },
+      kolomStandar: [
+        "Timestamp",
+        "Token & Nama KUB",
+        "Tanggal Rapat",
+        "Nama Kegiatan",
+        "Pembicara",
+        "Jabatan",
+        "Pokok-Pokok Materi / Usulan",
+        "Kesimpulan / Tindak Lanjut"
+      ]
+    }
+  ]
+};
+
+const $ = s => document.querySelector(s);
+const side = $("#side"), main = $("#main");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function buildMenu(){
+  let html = `<div class="brand"><b>NS</b><span>${esc(CONFIG.nama)}<small>NIM: ${esc(CONFIG.nim)} • KUB</small></span></div>`;
+  let g = "";
+  CONFIG.halaman.forEach(h => {
+    if(h.grup !== g){ g = h.grup; html += `<h2>${esc(g)}</h2>`; }
+    html += `<a href="#${h.id}" data-id="${h.id}">${esc(h.judul)}</a>`;
+  });
+
+  if(CONFIG.menuUtama && CONFIG.menuUtama.length){
+    html += `<h2>Website Utama</h2>`;
+    CONFIG.menuUtama.forEach(m => {
+      html += `<a href="${esc(m.url)}" class="${m.isHome ? "back-home" : ""}">${esc(m.label)}</a>`;
+    });
+  }
+
+  if(CONFIG.portalKelompokUrl){
+    html += `<h2>Tautan Kelompok</h2><a href="${esc(CONFIG.portalKelompokUrl)}" target="_blank" rel="noopener noreferrer">&larr; Portal Utama KUB</a>`;
+  }
+  side.innerHTML = html;
+}
+
+function refreshSheet(btn){
+  const frame = btn.closest(".frame").querySelector("iframe");
+  if(!frame) return;
+  const url = frame.dataset.src;
+  btn.disabled = true;
+  btn.textContent = "Memuat ulang...";
+  frame.src = "about:blank";
+  setTimeout(() => {
+    frame.src = url;
+    btn.disabled = false;
+    btn.innerHTML = "&#8635; Muat Ulang Data";
+  }, 150);
+}
+
+function renderFrame(label, url, tinggi, petunjuk){
+  if(!url){
+    return `<div class="blok"><h3>${esc(label)}</h3>
+      <div class="frame kosong">
+        <strong>Tautan ${esc(label)} belum diisi</strong>
+        <span>${petunjuk || `Tempel URL embed pada variabel <code>CONFIG</code> di file <code>tugas4.html</code>.`}</span>
+      </div></div>`;
+  }
+  if(url.includes("/spreadsheets/")){
+    return `<div class="blok"><h3>${esc(label)}</h3>
+      <div class="frame">
+        <div class="rekap-bar">
+          <strong>Live Google Spreadsheet (Terhubung Otomatis dengan Google Form)</strong>
+          <button type="button" class="btn-mini" onclick="refreshSheet(this)">&#8635; Muat Ulang Data</button>
+        </div>
+        <div style="height:${tinggi}px">
+          <iframe src="${esc(url)}" data-src="${esc(url)}" title="${esc(label)}" loading="lazy" allowfullscreen></iframe>
+        </div>
+      </div></div>`;
+  }
+  return `<div class="blok"><h3>${esc(label)}</h3>
+    <div class="frame" style="height:${tinggi}px">
+      <iframe src="${esc(url)}" title="${esc(label)}" loading="lazy" allowfullscreen></iframe>
+    </div></div>`;
+}
+
+function renderRekapSpreadsheet(h, label = "Laporan & Rekap Data (Spreadsheet)"){
+  if(h.sheetEmbed){
+    return renderFrame(label, h.sheetEmbed, 500);
+  }
+  if(h.rekapData && h.rekapData.baris.length){
+    const thead = h.rekapData.kolom.map(k => `<th>${esc(k)}</th>`).join("");
+    const tbody = h.rekapData.baris.map(r => `<tr>${r.map(sel => `<td>${esc(sel)}</td>`).join("")}</tr>`).join("");
+    return `<div class="blok"><h3>${esc(label)}</h3>
+      <div class="tbl-wrap">
+        <div class="rekap-bar">
+          <strong>Rekap Data dari Google Spreadsheet</strong>
+          <span>Total entri tercatat: <strong>${h.rekapData.baris.length}</strong></span>
+        </div>
+        <table><thead><tr>${thead}</tr></thead><tbody>${tbody}</tbody></table>
+        <div class="rekap-note">Untuk tampilan Google Spreadsheet langsung (live update), isi <code>sheetEmbed</code> dengan URL <em>Publish to web</em> (<code>pubhtml</code>) dari Google Sheet Anda.</div>
+      </div></div>`;
+  }
+  return renderFrame(
+    label,
+    "",
+    500,
+    `Di Google Sheet klik <code>File &rarr; Bagikan &rarr; Publikasikan ke web &rarr; Sematkan</code>, lalu tempel URL-nya ke <code>sheetEmbed</code>.`
+  );
+}
+
+function renderBeranda(h){
+  return `
+    <header class="head">
+      <span class="badge">Tugas 4 Individu • ${esc(CONFIG.kelompok)}</span>
+      <h1>${esc(h.judul)}</h1>
+      <p>${esc(h.desc)}</p>
+    </header>
+    <div class="aksi">
+      <a class="tombol" href="index.html">&larr; Kembali ke Halaman Utama</a>
+      <a class="tombol utama" href="#tamu">Buka Modul Tamu Kelompok &rarr;</a>
+    </div>
+    <div class="cards">
+      <div class="card"><small>Mahasiswa</small><strong>${esc(CONFIG.nama)}</strong><p>NIM: ${esc(CONFIG.nim)}</p></div>
+      <div class="card"><small>Landasan Peraturan</small><strong>PERKA BRSDM KP</strong><p>${esc(CONFIG.regulasi)}</p></div>
+      <div class="card"><small>Cakupan Subsistem</small><strong>3 Buku Administrasi</strong><p>Tamu Kelompok, Agenda Surat, dan Notulen Rapat Kelompok.</p></div>
+    </div>
+    <div class="blok">
+      <h3>Alur Sistem Informasi Manajemen KUB</h3>
+      <div class="alur">
+        <span>1. Input (Google Form)</span><b>&rarr;</b>
+        <span>2. Database &amp; Relasi Token KUB (Google Sheet)</span><b>&rarr;</b>
+        <span>3. Laporan &amp; Rekap Data (Spreadsheet)</span><b>&rarr;</b>
+        <span>4. Integrasi Portal Web KUB</span>
+      </div>
+    </div>
+    <div class="blok">
+      <h3>Daftar KUB Terintegrasi (Dari Data Dasar)</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Token Kelompok</th><th>Nama KUB</th><th>Kabupaten</th><th>Kelas</th></tr></thead>
+          <tbody>
+            <tr><td><code>KUB-13Jun</code></td><td>KUB Usaha Makmur</td><td>Bangkalan</td><td>Pemula</td></tr>
+            <tr><td><code>KUB-23Muc</code></td><td>KUB Angsa Laut</td><td>Merauke</td><td>Pemula</td></tr>
+            <tr><td><code>KUB-14Adr</code></td><td>KUB Intimung Taka</td><td>Bulungan</td><td>Pemula</td></tr>
+            <tr><td><code>KUB-15Suk</code></td><td>KUB Usaha Nelayan</td><td>Konawe</td><td>Pemula</td></tr>
+            <tr><td><code>KUB-10Sal</code></td><td>Kompak Maju 01</td><td>Tanah Laut</td><td>Pemula</td></tr>
+            <tr><td><code>Kom-16Sal</code></td><td>Kompak Maju 02</td><td>Kab. Banjar</td><td>Pemula</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function renderModul(h){
+  let html = `<header class="head">
+    <span class="badge">${esc(CONFIG.regulasi)}</span>
+    <h1>${esc(h.judul)}</h1>
+    <p>${esc(h.desc)}</p>
+  </header>`;
+
+  if(h.aksi){
+    html += `<div class="aksi">` + h.aksi.map(a =>
+      a.url ? `<a class="tombol${a.utama?" utama":""}" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">${esc(a.label)}</a>`
+            : `<span class="tombol mati">${esc(a.label)} (URL belum diisi)</span>`
+    ).join("") + `</div>`;
+  }
+
+  /* 1. Google Form utama modul */
+  html += renderFrame(
+    h.kepuasan ? "Formulir Notulen Rapat (Google Form)" : "Formulir Pengisian (Google Form)",
+    h.formEmbed,
+    640
+  );
+
+  /* 2. Google Spreadsheet utama modul */
+  html += renderRekapSpreadsheet(
+    h,
+    h.kepuasan ? "Laporan & Rekap Data Notulen (Google Spreadsheet)" : "Laporan & Rekap Data (Spreadsheet)"
+  );
+
+  /* 3, 4, 5. Bagian Tingkat Kepuasan (khusus Notulen Rapat) */
+  if(h.kepuasan){
+    html += renderFrame(
+      "Formulir Tingkat Kepuasan (Google Form)",
+      h.kepuasan.formEmbed,
+      640
+    );
+    html += renderFrame(
+      "Hasil Pengisian Tingkat Kepuasan (Google Spreadsheet)",
+      h.kepuasan.sheetEmbed,
+      500,
+      `Di Google Sheet hasil form kepuasan klik <code>File &rarr; Bagikan &rarr; Publikasikan ke web &rarr; Sematkan</code>, lalu tempel URL-nya ke <code>kepuasan.sheetEmbed</code>.`
+    );
+    html += renderFrame(
+      "Visualisasi Data Tingkat Kepuasan (Looker Studio)",
+      h.kepuasan.lookerEmbed,
+      620,
+      `Di Looker Studio klik <code>File / Bagikan &rarr; Sematkan laporan</code>, aktifkan penyematan, lalu tempel URL embed-nya ke <code>kepuasan.lookerEmbed</code>.`
+    );
+  }
+
+  if(h.kolomStandar){
+    html += `<div class="blok"><h3>Struktur Field Database (Sesuai PERKA BRSDM 4/2019)</h3>
+      <div class="tbl-wrap"><table><thead><tr><th>No</th><th>Kolom / Atribut Data</th></tr></thead><tbody>` +
+      h.kolomStandar.map((k,i) => `<tr><td>${i+1}</td><td>${esc(k)}</td></tr>`).join("") +
+      `</tbody></table></div></div>`;
+  }
+  return html;
+}
+
+function render(id){
+  const h = CONFIG.halaman.find(x => x.id === id) || CONFIG.halaman[0];
+  document.title = h.judul + " | Tugas 4 KUB";
+  side.querySelectorAll("a[data-id]").forEach(a => {
+    if(a.dataset.id === h.id) a.setAttribute("aria-current","page");
+    else a.removeAttribute("aria-current");
+  });
+  main.innerHTML = (h.id === "beranda") ? renderBeranda(h) : renderModul(h);
+  window.scrollTo(0,0);
+  closeMenu();
+}
+
+function route(){ render(location.hash.slice(1) || CONFIG.halaman[0].id); }
+function closeMenu(){ document.body.classList.remove("buka"); $("#burger").setAttribute("aria-expanded","false"); }
+$("#burger").addEventListener("click", () => {
+  const open = document.body.classList.toggle("buka");
+  $("#burger").setAttribute("aria-expanded", open);
+});
+$("#scrim").addEventListener("click", closeMenu);
+window.addEventListener("hashchange", route);
+buildMenu(); route();
+</script>
+</body>
+</html>
