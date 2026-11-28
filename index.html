@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal Sistem Informasi KUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --abyss:#071b27;
+  --ocean:#0d2f42;
+  --ocean-2:#144966;
+  --cyan:#00b4d8;
+  --cyan-soft:#e0f7fc;
+  --amber:#f59e0b;
+  --amber-soft:#fef3c7;
+  --bg:#eff5f9;
+  --card:rgba(255,255,255,.90);
+  --card-solid:#ffffff;
+  --line:#d5e4ee;
+  --text:#0f2533;
+  --muted:#567080;
+  --shadow:0 12px 32px -10px rgba(7,27,39,.12), 0 4px 12px -4px rgba(7,27,39,.06);
+  --rail-space:262px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(circle at 15% 12%, rgba(0,180,216,.14) 0%, transparent 38%),
+    radial-gradient(circle at 88% 18%, rgba(245,158,11,.10) 0%, transparent 34%),
+    radial-gradient(circle at 75% 88%, rgba(20,73,102,.10) 0%, transparent 40%),
+    var(--bg);
+  min-height:100vh;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+a{color:inherit}
+button,input{font-family:inherit}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* ================= BACKDROP GLOBAL ================= */
+.radial-backdrop, .fs-backdrop{
+  position:fixed;inset:0;
+  background:rgba(7,27,39,.48);
+  backdrop-filter:blur(5px);
+  opacity:0;pointer-events:none;
+  transition:opacity .28s ease;
+}
+.radial-backdrop{z-index:45}
+.fs-backdrop{z-index:85}
+body.radial-open .radial-backdrop{opacity:1;pointer-events:auto}
+body.has-fs .fs-backdrop{opacity:1;pointer-events:auto}
+
+/* ================= RADIAL SIDEBAR (DESKTOP) ================= */
+.radial-nav{
+  position:fixed;
+  left:0;top:50%;
+  transform:translateY(-50%);
+  width:270px;height:600px;
+  z-index:60;
+  pointer-events:none;
+}
+body.radial-open .radial-nav{width:560px}
+
+.radial-dome{
+  position:absolute;left:-125px;top:50%;
+  width:265px;height:265px;
+  transform:translateY(-50%);
+  border-radius:50%;
+  background:radial-gradient(circle at 60% 50%, #123e57 0%, #071b27 78%);
+  border:1px solid rgba(0,180,216,.35);
+  box-shadow:
+    0 20px 50px rgba(4,16,24,.45),
+    inset 0 0 28px rgba(0,180,216,.16);
+  pointer-events:auto;
+  transition:box-shadow .3s ease;
+}
+body.radial-open .radial-dome{
+  box-shadow:0 24px 64px rgba(4,16,24,.65), 0 0 0 1px rgba(0,180,216,.45), inset 0 0 36px rgba(0,180,216,.24);
+}
+
+/* Cincin Orbit CSS agar animasi halus */
+.orbit-circle{
+  position:absolute;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  transition:width .42s cubic-bezier(.22,1,.36,1), height .42s cubic-bezier(.22,1,.36,1), border-color .35s;
+}
+.orbit-inner-ring{
+  border:1.2px solid rgba(0,180,216,.28);
+}
+.orbit-outer-ring{
+  border:1.5px dashed rgba(13,47,66,.18);
+}
+body.radial-open .orbit-outer-ring{
+  border-color:rgba(0,180,216,.45);
+  border-width:1.75px;
+}
+
+.radial-svg{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  overflow:visible;
+  pointer-events:none;
+}
+.spoke{
+  stroke:rgba(13,47,66,.12);
+  stroke-width:1.25;
+  transition:stroke .25s, stroke-width .25s;
+}
+.spoke.active{stroke:var(--amber);stroke-width:2.3}
+body.radial-open .spoke{stroke:rgba(255,255,255,.20)}
+body.radial-open .spoke.active{stroke:var(--amber)}
+
+/* Pusat Core Orb */
+.radial-core{
+  position:absolute;
+  width:72px;height:72px;
+  border-radius:50%;
+  border:2px solid rgba(0,180,216,.65);
+  background:linear-gradient(145deg, #00b4d8, #0d4f6e);
+  color:#fff;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;
+  pointer-events:auto;
+  box-shadow:0 10px 26px rgba(0,180,216,.38), inset 0 2px 6px rgba(255,255,255,.4);
+  transition:transform .28s cubic-bezier(.22,1,.36,1), box-shadow .28s;
+  z-index:5;
+}
+.radial-core:hover{
+  transform:translate(-50%,-50%) scale(1.07) !important;
+  box-shadow:0 12px 32px rgba(0,180,216,.55), inset 0 2px 8px rgba(255,255,255,.5);
+}
+.radial-core strong{
+  font-family:'Space Grotesk',sans-serif;
+  font-size:15px;letter-spacing:.05em;line-height:1;
+}
+.radial-core span{
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.08em;
+  opacity:.92;margin-top:3px;font-weight:600;
+}
+.core-pulse{
+  position:absolute;inset:-7px;border-radius:50%;
+  border:1.5px solid rgba(0,180,216,.45);
+  animation:pulseRing 2.8s infinite;
+  pointer-events:none;
+}
+@keyframes pulseRing{
+  0%{transform:scale(.95);opacity:.85}
+  70%{transform:scale(1.22);opacity:0}
+  100%{transform:scale(1.22);opacity:0}
+}
+
+/* Tombol Grup di Cincin Dalam */
+.group-node{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  pointer-events:auto;
+  border:1.5px solid rgba(255,255,255,.22);
+  background:rgba(13,47,66,.92);
+  color:#cbe4ee;
+  width:44px;height:44px;
+  border-radius:50%;
+  display:grid;place-items:center;
+  cursor:pointer;
+  box-shadow:0 6px 16px rgba(4,16,24,.35);
+  transition:all .25s cubic-bezier(.22,1,.36,1);
+  z-index:4;
+}
+.group-node:hover{
+  background:var(--ocean-2);
+  color:#fff;
+  border-color:var(--cyan);
+  transform:translate(-50%,-50%) scale(1.1);
+}
+.group-node.active{
+  background:linear-gradient(135deg, var(--amber), #d97706);
+  color:var(--abyss);
+  border-color:#fde68a;
+  box-shadow:0 8px 20px rgba(245,158,11,.42);
+}
+.group-node svg{width:18px;height:18px}
+.group-tag{
+  position:absolute;left:52px;top:50%;transform:translateY(-50%);
+  background:var(--abyss);color:#fff;
+  font-size:11.5px;font-weight:600;white-space:nowrap;
+  padding:4px 10px;border-radius:999px;
+  border:1px solid rgba(255,255,255,.16);
+  opacity:0;pointer-events:none;
+  transition:opacity .2s, transform .2s;
+  box-shadow:0 6px 16px rgba(0,0,0,.25);
+}
+.group-node:hover .group-tag{opacity:1;transform:translateY(-50%) translateX(2px)}
+
+/* Node Halaman di Cincin Luar */
+.radial-node{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  pointer-events:auto;
+  text-decoration:none;
+  display:flex;align-items:center;
+  transition:
+    left .42s cubic-bezier(.22,1,.36,1),
+    top .42s cubic-bezier(.22,1,.36,1);
+  z-index:3;
+}
+.node-dot{
+  width:40px;height:40px;flex-shrink:0;
+  border-radius:50%;
+  background:rgba(255,255,255,.95);
+  color:var(--ocean);
+  border:1.5px solid #c9dce7;
+  display:grid;place-items:center;
+  box-shadow:0 6px 16px rgba(7,27,39,.12);
+  transition:all .22s cubic-bezier(.22,1,.36,1);
+}
+.radial-nav.compact-dots .node-dot{width:34px;height:34px}
+.radial-nav.compact-dots .node-dot svg{width:16px;height:16px}
+.node-dot svg{width:17px;height:17px;stroke-width:1.9}
+
+.radial-node:hover{z-index:20}
+.radial-node:hover .node-dot{
+  transform:scale(1.14);
+  border-color:var(--cyan);
+  background:var(--cyan-soft);
+  color:var(--abyss);
+  box-shadow:0 8px 22px rgba(0,180,216,.28);
+}
+.radial-node[aria-current="page"] .node-dot{
+  background:linear-gradient(135deg, var(--abyss), var(--ocean-2));
+  color:#fff;
+  border-color:var(--amber);
+  box-shadow:0 0 0 4px rgba(245,158,11,.24), 0 8px 20px rgba(7,27,39,.3);
+}
+
+.node-label{
+  position:absolute;left:48px;
+  background:rgba(7,27,39,.94);
+  color:#f1f7fa;
+  padding:6px 13px;
+  border-radius:999px;
+  font-size:12.5px;font-weight:600;
+  white-space:nowrap;
+  border:1px solid rgba(255,255,255,.15);
+  box-shadow:0 8px 24px rgba(4,16,24,.28);
+  opacity:0;
+  transform:translateX(-6px) scale(.96);
+  pointer-events:none;
+  transition:opacity .22s ease, transform .24s cubic-bezier(.22,1,.36,1), background .2s;
+}
+.radial-nav.compact-dots .node-label{left:42px;padding:5px 12px;font-size:12px}
+.radial-node:hover .node-label{
+  opacity:1;transform:translateX(0) scale(1);
+}
+body.radial-open .node-label{
+  opacity:1;pointer-events:auto;
+  transform:translateX(0) scale(1);
+}
+body.radial-open .radial-node[aria-current="page"] .node-label{
+  background:linear-gradient(135deg, var(--amber), #f59e0b);
+  color:var(--abyss);
+  border-color:#fde68a;
+  font-weight:700;
+}
+body.radial-open .radial-node:hover .node-label{
+  background:var(--ocean-2);
+  border-color:var(--cyan);
+  color:#fff;
+}
+body.radial-open .radial-node[aria-current="page"]:hover .node-label{
+  background:var(--amber);color:var(--abyss);
+}
+
+.radial-hint{
+  position:fixed;
+  left:18px;bottom:18px;
+  z-index:55;
+  display:flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--line);
+  border-radius:999px;
+  padding:6px 13px 6px 8px;
+  font-size:12px;font-weight:600;color:var(--ocean);
+  box-shadow:0 6px 18px rgba(7,27,39,.08);
+  cursor:pointer;
+  transition:all .2s;
+}
+.radial-hint:hover{border-color:var(--cyan);transform:translateY(-1px)}
+.radial-hint i{
+  width:22px;height:22px;border-radius:50%;
+  background:var(--abyss);color:#fff;font-style:normal;
+  display:grid;place-items:center;font-size:11px;
+}
+
+/* ================= MOBILE RADIAL DRAWER & FAB ================= */
+.mobile-bar,.mobile-fab,.mobile-sheet{display:none}
+
+/* ================= KONTEN UTAMA ================= */
+main{
+  margin-left:var(--rail-space);
+  padding:26px clamp(18px, 3.4vw, 46px) 76px;
+  max-width:1300px;
+  transition:margin-left .3s ease;
+}
+
+/* Top Bar & Quick Search */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  margin-bottom:20px;flex-wrap:wrap;
+}
+.brand-pill{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--card);backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:999px;
+  padding:6px 14px 6px 7px;
+  box-shadow:0 4px 12px rgba(7,27,39,.05);
+}
+.brand-pill b{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg, var(--abyss), var(--ocean-2));
+  color:#fff;font-size:11px;display:grid;place-items:center;
+  font-family:'Space Grotesk',sans-serif;
+}
+.brand-pill span{font-size:13px;font-weight:700;color:var(--ocean)}
+.brand-pill small{color:var(--muted);font-weight:500;margin-left:4px}
+
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-left:auto}
+
+.quick-search{position:relative}
+.search-box{
+  display:flex;align-items:center;gap:7px;
+  background:var(--card);backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:999px;
+  padding:6px 13px;
+  transition:border-color .2s, box-shadow .2s;
+}
+.search-box:focus-within{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 3px rgba(0,180,216,.15);
+  background:#fff;
+}
+.search-box svg{width:15px;height:15px;color:var(--muted);flex-shrink:0}
+.search-box input{
+  border:0;background:transparent;outline:none;
+  font-size:13px;color:var(--text);width:170px;
+}
+.search-box input::placeholder{color:var(--muted)}
+.search-dropdown{
+  position:absolute;right:0;top:calc(100% + 8px);
+  width:310px;max-height:360px;overflow-y:auto;
+  background:#fff;border:1px solid var(--line);
+  border-radius:16px;padding:8px;
+  box-shadow:0 20px 44px rgba(7,27,39,.18);
+  display:none;z-index:50;
+}
+.quick-search.open .search-dropdown{display:block}
+.sd-group{
+  font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);padding:8px 10px 4px;
+}
+.sd-item{
+  display:flex;align-items:center;gap:9px;
+  padding:8px 10px;border-radius:10px;
+  text-decoration:none;font-size:13px;font-weight:600;color:var(--text);
+  transition:background .15s;
+}
+.sd-item svg{width:16px;height:16px;color:var(--ocean-2);flex-shrink:0}
+.sd-item:hover{background:var(--cyan-soft);color:var(--abyss)}
+.sd-item[aria-current="page"]{background:var(--amber-soft);color:var(--abyss)}
+.sd-empty{padding:16px;text-align:center;font-size:13px;color:var(--muted)}
+
+.nav-arrows{display:flex;align-items:center;gap:8px}
+.nav-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--card);backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;font-size:13px;font-weight:600;
+  color:var(--ocean);text-decoration:none;cursor:pointer;
+  transition:all .2s;
+}
+.nav-btn:hover{border-color:var(--cyan);background:#fff;transform:translateY(-1px)}
+.nav-btn svg{width:15px;height:15px}
+
+/* Hero Card */
+.hero{
+  position:relative;overflow:hidden;
+  background:linear-gradient(135deg, var(--abyss) 0%, #103d56 62%, #155978 100%);
+  color:#fff;
+  border-radius:24px;
+  padding:28px clamp(22px, 3vw, 36px);
+  margin-bottom:24px;
+  box-shadow:0 18px 40px -14px rgba(7,27,39,.38);
+}
+.hero::after{
+  content:"";position:absolute;right:-60px;top:-70px;
+  width:260px;height:260px;border-radius:50%;
+  background:radial-gradient(circle, rgba(0,180,216,.28) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero::before{
+  content:"";position:absolute;right:120px;bottom:-90px;
+  width:200px;height:200px;border-radius:50%;
+  background:radial-gradient(circle, rgba(245,158,11,.20) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  color:#7ce8ff;background:rgba(0,180,216,.16);
+  border:1px solid rgba(0,180,216,.34);
+  padding:4px 12px;border-radius:999px;
+}
+.hero-badge::before{
+  content:"";width:7px;height:7px;border-radius:50%;background:var(--amber);
+}
+.hero-step{
+  font-size:12px;font-weight:600;color:#a5cadb;
+  background:rgba(255,255,255,.08);
+  padding:3px 10px;border-radius:999px;
+}
+.hero h1{
+  font-family:'Space Grotesk','Plus Jakarta Sans',sans-serif;
+  font-size:clamp(24px, 3.2vw, 34px);
+  line-height:1.18;margin-bottom:8px;letter-spacing:-.02em;
+}
+.hero p{color:#c9e1ec;max-width:68ch;font-size:15px}
+
+/* Tombol Aksi */
+.aksi{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px;position:relative;z-index:2}
+.tombol{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:12px;
+  font-weight:600;font-size:14px;text-decoration:none;
+  border:1.5px solid rgba(255,255,255,.28);
+  color:#fff;background:rgba(255,255,255,.08);
+  backdrop-filter:blur(6px);
+  transition:all .22s ease;
+}
+.tombol:hover{background:rgba(255,255,255,.18);border-color:#fff;transform:translateY(-1px)}
+.tombol.utama{
+  background:linear-gradient(135deg, var(--amber), #f59e0b);
+  color:var(--abyss);border-color:#fde68a;font-weight:700;
+  box-shadow:0 8px 20px rgba(245,158,11,.32);
+}
+.tombol.utama:hover{filter:brightness(1.06);transform:translateY(-2px)}
+.tombol.mati{border-style:dashed;opacity:.55;pointer-events:none}
+.tombol svg{width:16px;height:16px}
+
+/* Grid & Kartu Konten */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:24px}
+.grid2 .blok{margin-bottom:0}
+.blok{
+  background:var(--card);
+  backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.85);
+  outline:1px solid var(--line);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  margin-bottom:24px;
+}
+.blok-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  padding:13px 18px;
+  background:linear-gradient(to right, rgba(224,247,252,.60), rgba(255,255,255,.78));
+  border-bottom:1px solid var(--line);
+}
+.blok-title{
+  display:flex;align-items:center;gap:9px;
+  font-size:14.5px;font-weight:700;color:var(--ocean);
+}
+.blok-title::before{
+  content:"";width:9px;height:9px;border-radius:50%;
+  background:linear-gradient(135deg, var(--cyan), var(--ocean-2));
+  box-shadow:0 0 0 3px rgba(0,180,216,.18);
+}
+.blok-tools{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.tool-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 10px;border-radius:8px;
+  border:1px solid var(--line);background:#fff;
+  color:var(--muted);font-size:12px;font-weight:600;
+  text-decoration:none;cursor:pointer;transition:all .18s;
+}
+.tool-btn:hover{color:var(--abyss);border-color:var(--cyan);background:var(--cyan-soft)}
+.tool-btn svg{width:13px;height:13px}
+.tool-btn.spinning svg{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.frame{background:var(--card-solid);overflow:hidden;position:relative}
+.frame iframe{display:block;width:100%;height:100%;border:0;position:relative;z-index:1}
+
+/* Indikator Loading Iframe */
+.frame-loader{
+  position:absolute;inset:0;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  background:linear-gradient(180deg, #f8fbfd, #eef5f9);
+  color:var(--muted);font-size:13px;font-weight:600;
+  transition:opacity .25s ease;
+}
+.frame-loader.done{opacity:0;pointer-events:none}
+.spinner{
+  width:28px;height:28px;border-radius:50%;
+  border:3px solid #cfe3ee;border-top-color:var(--cyan);
+  animation:spin .8s linear infinite;
+}
+
+/* Mode Fullscreen Kartu */
+.blok.fullscreen{
+  position:fixed;inset:16px;z-index:90;
+  margin:0;border-radius:18px;
+  display:flex;flex-direction:column;
+  box-shadow:0 30px 90px rgba(4,16,24,.55);
+}
+.blok.fullscreen .frame{flex:1;height:auto !important}
+
+/* Status Kosong */
+.kosong{
+  display:grid;place-items:center;text-align:center;gap:8px;
+  padding:36px 24px;min-height:200px;
+  background:
+    radial-gradient(circle at center, rgba(0,180,216,.06), transparent 65%),
+    repeating-linear-gradient(135deg, #f3f8fb 0 12px, #eaf2f7 12px 24px);
+  color:var(--muted);font-size:14px;
+}
+.kosong strong{color:var(--ocean);font-size:15px}
+.kosong code{
+  background:#fff;padding:2px 8px;border-radius:6px;
+  border:1px solid var(--line);color:var(--ocean-2);font-weight:600;
+}
+
+/* ================= RESPONSIF ================= */
+@media (max-width:1060px){
+  .grid2{grid-template-columns:1fr}
+}
+
+@media (max-width:860px){
+  .radial-nav, .radial-hint, .radial-backdrop{display:none}
+  main{margin-left:0;padding:16px 14px 96px}
+  .brand-pill{display:none}
+  .quick-search{flex:1}
+  .search-box{width:100%}
+  .search-box input{width:100%}
+  .search-dropdown{left:0;right:auto;width:100%}
+
+  .mobile-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:rgba(7,27,39,.95);color:#fff;
+    padding:12px 16px;
+    position:sticky;top:0;z-index:40;
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid rgba(0,180,216,.28);
+  }
+  .mobile-bar-left{display:flex;align-items:center;gap:10px}
+  .mobile-bar-left b{
+    width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg, var(--amber), #d97706);
+    color:var(--abyss);display:grid;place-items:center;
+    font-family:'Space Grotesk',sans-serif;font-size:13px;
+  }
+  .mobile-bar-left span{font-weight:700;font-size:14.5px;line-height:1.2}
+  .mobile-bar-left small{display:block;font-size:11px;color:#9cc4d6;font-weight:500}
+  .mobile-menu-btn{
+    border:1px solid rgba(0,180,216,.45);
+    background:rgba(0,180,216,.15);color:#fff;
+    padding:7px 12px;border-radius:999px;
+    font-size:12.5px;font-weight:600;cursor:pointer;
+  }
+
+  .mobile-fab{
+    display:grid;place-items:center;
+    position:fixed;left:18px;bottom:18px;z-index:70;
+    width:60px;height:60px;border-radius:50%;
+    border:2px solid rgba(0,180,216,.7);
+    background:linear-gradient(145deg, #00b4d8, #0b3c54);
+    color:#fff;cursor:pointer;
+    box-shadow:0 12px 28px rgba(7,27,39,.4);
+  }
+  .mobile-fab svg{width:24px;height:24px}
+
+  .mobile-sheet{
+    display:block;
+    position:fixed;inset:0;z-index:65;
+    background:rgba(7,27,39,.55);backdrop-filter:blur(6px);
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  body.mobile-open .mobile-sheet{opacity:1;pointer-events:auto}
+  .mobile-arc-panel{
+    position:absolute;left:12px;right:12px;bottom:90px;
+    max-height:72vh;overflow-y:auto;
+    background:linear-gradient(160deg, #0c2c3e, #071b27);
+    border:1px solid rgba(0,180,216,.38);
+    border-radius:26px 26px 26px 10px;
+    padding:16px;color:#fff;
+    box-shadow:0 24px 60px rgba(4,16,24,.6);
+    transform:translateY(20px) scale(.96);
+    transition:transform .28s cubic-bezier(.22,1,.36,1);
+  }
+  body.mobile-open .mobile-arc-panel{transform:translateY(0) scale(1)}
+  .mobile-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+  .mobile-tab{
+    padding:9px 10px;border-radius:12px;border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.06);color:#b9d4e0;
+    font-size:12.5px;font-weight:700;cursor:pointer;
+  }
+  .mobile-tab.active{
+    background:var(--amber);color:var(--abyss);border-color:#fde68a;
+  }
+  .mobile-list{display:grid;gap:7px}
+  .mobile-item{
+    display:flex;align-items:center;gap:11px;
+    padding:10px 12px;border-radius:14px;
+    text-decoration:none;color:#e4f1f7;
+    background:rgba(255,255,255,.05);
+    border:1px solid transparent;font-size:13.5px;font-weight:600;
+  }
+  .mobile-item svg{width:18px;height:18px;color:var(--cyan);flex-shrink:0}
+  .mobile-item[aria-current="page"]{
+    background:rgba(0,180,216,.2);border-color:var(--cyan);color:#fff;
+  }
+  .tombol{width:100%;justify-content:center}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important;scroll-behavior:auto!important}
+}
+</style>
+</head>
+<body>
+
+<header class="mobile-bar">
+  <div class="mobile-bar-left">
+    <b>KUB</b>
+    <div>
+      <span id="mobTitle">Portal KUB</span>
+      <small id="mobSub">Sistem Informasi</small>
+    </div>
+  </div>
+  <button class="mobile-menu-btn" id="mobBtn">Menu Radial</button>
+</header>
+
+<div class="radial-backdrop" id="radialBackdrop"></div>
+<div class="fs-backdrop" id="fsBackdrop"></div>
+
+<nav class="radial-nav" id="radialNav" aria-label="Menu Radial Utama"></nav>
+
+<button class="radial-hint" id="radialHint" type="button" title="Buka/Tutup label lengkap menu radial">
+  <i>M</i><span>Menu Radial</span>
+</button>
+
+<button class="mobile-fab" id="mobileFab" aria-label="Buka menu radial" aria-expanded="false">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="3"/><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48 2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48 2.83-2.83"/>
+  </svg>
+</button>
+<div class="mobile-sheet" id="mobileSheet">
+  <div class="mobile-arc-panel" id="mobilePanel"></div>
+</div>
+
+<main id="main" tabindex="-1"></main>
+
+<script>
+/* =====================================================================
+   KONFIGURASI PORTAL KUB
+   - Ganti atau tambah tautan di bagian CONFIG di bawah ini.
+   ===================================================================== */
+const LOOKER = "https://datastudio.google.com/embed/reporting/";
+const CONFIG = {
+  judul: "Portal KUB",
+  sub: "Sistem Informasi",
+  halaman: [
+    /* ---------- Informasi KUB ---------- */
+    {id:"profil", grup:"Informasi KUB", judul:"Profil KUB", desc:"Profil kelompok usaha bersama.",
+     blok:[{tipe:"embed", label:"Dashboard Profil KUB", url:LOOKER+"ded2cbd7-ee8d-41be-93b4-ded0ec69a3fa/page/p_1zlhqqqy4d", tinggi:540}]},
+
+    {id:"sejarah", grup:"Informasi KUB", judul:"Sejarah Kelompok", desc:"Sejarah singkat terbentuknya KUB.",
+     aksi:[{label:"Buka di Looker Studio", url:"https://datastudio.google.com/reporting/74f827ce-532d-46f7-ad67-455964a59f2c", utama:true}],
+     blok:[{tipe:"embed", label:"Dashboard Sejarah Kelompok", url:LOOKER+"74f827ce-532d-46f7-ad67-455964a59f2c/page/page_12345", tinggi:540}]},
+
+    {id:"data-dasar", grup:"Informasi KUB", judul:"Data Dasar", desc:"Profil singkat tiap KUB beserta tabel spreadsheet dan formulir terbaru.",
+     aksi:[{label:"Isi Google Form (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLScLrodD9TVcZUcOqMn2pOmfOtJGoZePNCm-e-h1AQRjZBQl0g/viewform?usp=dialog", utama:true},
+           {label:"Lihat Spreadsheet", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vQuBmbpZMv0I1GdXGHZ-4o7Ky6ddPSrSr2jkv_ufRcSrmQscCWOR4sEB8h9HDu6N_zRGy-0EbwCXAeV/pubhtml?widget=true&headers=false"}],
+     blok:[{tipe:"embed", label:"Tabel Data Dasar (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vQuBmbpZMv0I1GdXGHZ-4o7Ky6ddPSrSr2jkv_ufRcSrmQscCWOR4sEB8h9HDu6N_zRGy-0EbwCXAeV/pubhtml?widget=true&headers=false", tinggi:500},
+           {tipe:"embed", label:"Rekapitulasi Data Dasar", url:LOOKER+"114df224-0e20-4ff1-9e52-a23afb811953", tinggi:520},
+           {tipe:"embed", label:"Formulir Data Dasar (Terbaru)", url:"https://docs.google.com/forms/d/e/1FAIpQLScLrodD9TVcZUcOqMn2pOmfOtJGoZePNCm-e-h1AQRjZBQl0g/viewform?embedded=true", tinggi:640}]},
+
+    {id:"keanggotaan", grup:"Informasi KUB", judul:"Data Keanggotaan", desc:"Setiap KUB memiliki anggota dengan struktur jabatan yang berbeda.",
+     aksi:[{label:"Buka di Looker Studio", url:"https://datastudio.google.com/reporting/9a93418c-8b2f-41cb-86ec-9be6f0322e7a", utama:true},
+           {label:"Lihat Spreadsheet", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRgbJs1P3k0J5QdwsLEsKnzHjkSKLNpjD-33umpqRY63ePwpp-BKF0SEIPQtIEpSLVZyy-5I6R4TYRh/pubhtml?widget=true&headers=false"}],
+     blok:[{tipe:"embed", label:"Dashboard Keanggotaan", url:LOOKER+"9a93418c-8b2f-41cb-86ec-9be6f0322e7a/page/3aUEG", tinggi:540},
+           {tipe:"embed", label:"Tabel Data Keanggotaan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRgbJs1P3k0J5QdwsLEsKnzHjkSKLNpjD-33umpqRY63ePwpp-BKF0SEIPQtIEpSLVZyy-5I6R4TYRh/pubhtml?widget=true&headers=false", tinggi:500}]},
+
+    {id:"komoditas", grup:"Informasi KUB", judul:"Data Komoditas Perikanan", desc:"Komoditas unggulan yang dimiliki setiap KUB.",
+     aksi:[{label:"Isi Google Form", url:"https://docs.google.com/forms/d/e/1FAIpQLSeXA3nHssrIH8XeGdR-z-mQvd38iw7NWW0p0eTMjVp5Lv81bw/viewform?usp=dialog", utama:true},
+           {label:"Lihat Spreadsheet", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRBSRvZ2BFPz9CJv5Ll0EzBCsoNBUmaPCXn20J0oEfJI6u-GScLBblQDU7xfkKdo0iM-uxWpkcx222F/pubhtml?widget=true&headers=false"},
+           {label:"Buka di Looker Studio", url:"https://datastudio.google.com/reporting/49f90472-188a-4040-8c8b-13117744a60e"}],
+     blok:[{tipe:"embed", label:"Dashboard Komoditas Perikanan", url:LOOKER+"49f90472-188a-4040-8c8b-13117744a60e/page/4aUEG", tinggi:540},
+           {tipe:"embed", label:"Tabel Data Komoditas Perikanan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRBSRvZ2BFPz9CJv5Ll0EzBCsoNBUmaPCXn20J0oEfJI6u-GScLBblQDU7xfkKdo0iM-uxWpkcx222F/pubhtml?widget=true&headers=false", tinggi:500},
+           {tipe:"embed", label:"Formulir Data Komoditas Perikanan", url:"https://docs.google.com/forms/d/e/1FAIpQLSeXA3nHssrIH8XeGdR-z-mQvd38iw7NWW0p0eTMjVp5Lv81bw/viewform?embedded=true", tinggi:640}]},
+
+    {id:"pendaftaran", grup:"Informasi KUB", judul:"Pendaftaran Anggota/Komoditas Baru", desc:"Isi formulir, lalu pantau rekapitulasi data pada tabel spreadsheet.",
+     aksi:[{label:"Isi Google Form (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLSdGUm2h81B9frqh_zhkzB_qGyZMp3Af4IH4YOfxLVA_M78Z9A/viewform?usp=dialog", utama:true},
+           {label:"Lihat Spreadsheet", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vT2Af7JNeG800jYK-X9_Dm_f6Mi2NGnBX47AygrfjAjvtjNjnaC5RQQjMuqBOdeVOwFOt8nd-_R_vF_/pubhtml?widget=true&headers=false"}],
+     blok:[{tipe:"embed", label:"Formulir Pendaftaran", url:"https://docs.google.com/forms/d/e/1FAIpQLSdGUm2h81B9frqh_zhkzB_qGyZMp3Af4IH4YOfxLVA_M78Z9A/viewform?embedded=true", tinggi:640},
+           {tipe:"embed", label:"Tabel Rekapitulasi Pendaftaran (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vT2Af7JNeG800jYK-X9_Dm_f6Mi2NGnBX47AygrfjAjvtjNjnaC5RQQjMuqBOdeVOwFOt8nd-_R_vF_/pubhtml?widget=true&headers=false", tinggi:500}]},
+
+    {id:"penilaian", grup:"Informasi KUB", judul:"Penilaian Kinerja/Komoditas", desc:"Berikan penilaian kinerja kelompok, lalu lihat hasilnya.",
+     blok:[{tipe:"embed", label:"Formulir Penilaian", url:"https://docs.google.com/forms/d/e/1FAIpQLSdkFupedTqPXaS2KCq6wvjdLVZOnFSdW7ayOY9rR95A8CZMkA/viewform?embedded=true", tinggi:640},
+           {tipe:"embed", kolom:true, label:"Tabel Penilaian", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vSFb14AKM0PsCfyZuJdPqyjXMlV0so2oubXMjhVkJYplO02OpSxSNv05on5vsW5ixP9oN9tPzHs0bOG/pubhtml?widget=true&headers=false", tinggi:460},
+           {tipe:"embed", kolom:true, label:"Grafik Penilaian", url:LOOKER+"831c9559-a863-45ab-963f-a948777d0836/page/page_12345", tinggi:460}]},
+
+    /* ---------- Administrasi kelompok ---------- */
+    ...[
+      ["agenda","Tamu Kelompok / Agenda Surat","Catat tamu, surat masuk, dan agenda kegiatan kelompok."],
+      ["kas","Kas Kelompok","Pemasukan, pengeluaran, dan saldo kas kelompok."],
+      ["produksi","Produksi","Catatan dan rekapitulasi produksi kelompok per periode."],
+      ["hasil-tangkapan","Hasil Tangkapan","Catatan dan rekapitulasi hasil tangkapan per periode."],
+      ["notulen","Notulen Rapat","Hasil rapat dan keputusan kelompok."],
+      ["rencana-kegiatan","Rencana Kegiatan","Agenda kegiatan kelompok ke depan."],
+      ["rub","Rencana Usaha Bersama","Perencanaan usaha bersama antar-kelompok."],
+      ["ruk","Rencana Usaha Kelompok","Perencanaan usaha satu kelompok."],
+      ["inventaris","Inventaris Barang","Perlengkapan, aset, dan barang milik kelompok."],
+      ["iuran","Iuran Kelompok","Iuran anggota dan status pembayaran."],
+      ["simpanan","Simpan Pinjam","Simpanan, pinjaman, dan pelunasan anggota."],
+      ["aktivitas","Aktivitas Kelompok","Aktivitas harian, mingguan, dan bulanan kelompok."]
+    ].map(([id,judul,desc]) => {
+      if (id === "kas") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Kas Kelompok (Tab Baru)", url:"https://forms.gle/ENdqvg7yuhQo3tJC6", utama:true},
+            {label:"Lihat Spreadsheet Kas", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vQgqJOdKx1Tmt--XKSJeIs05J8svbG2mFj_oFuK42ns1UNDNjkyHwFiKAmw6fwG3fGt65A1E47-vjNM/pubhtml?widget=true&headers=false"},
+            {label:"Isi Form Kepuasan Web", url:"https://forms.gle/w7WgWA59nxZy6pGZ6"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Kas Kelompok (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vQgqJOdKx1Tmt--XKSJeIs05J8svbG2mFj_oFuK42ns1UNDNjkyHwFiKAmw6fwG3fGt65A1E47-vjNM/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Kas Kelompok", url:LOOKER+"886f7945-5e71-428f-8125-e7449610a04f/page/LpWEG", tinggi:540},
+            {tipe:"embed", label:"Formulir Tingkat Kepuasan Web", url:"https://docs.google.com/forms/d/e/1FAIpQLSdXAywsxtn-7YXtB_ACHdHr1uRUeq8FskuwP5CX3jAkBKRfoA/viewform?embedded=true", tinggi:640},
+            {tipe:"embed", label:"Rekap Data Tingkat Kepuasan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTP2s-iN-BvZ6m4UY7l5G87XeCTjaBTIAewUlrKFwtDVZueELHlrEdzXZwBjdYJLEUlgTOvUxpg0i87/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Tingkat Kepuasan", url:LOOKER+"010ca058-e41c-4022-995a-5c7f646fb9b0/page/kyWEG", tinggi:540}
+          ]
+        };
+      }
+      if (id === "produksi") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Produksi (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLSf1ZYJs8QS5TOAEomAU_lnkpiiSwEr1Mbu4bAlEeeYpGtEhuw/viewform?usp=dialog", utama:true},
+            {label:"Lihat Spreadsheet Produksi", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRzOPzymq8HLNvhH0X-_OFa_aEBfrz-4htYPL4k3OIxwfpZvxSCN1_bt5t5jveDfdCelRJsCpnmkakf/pubhtml?widget=true&headers=false"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Produksi (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vRzOPzymq8HLNvhH0X-_OFa_aEBfrz-4htYPL4k3OIxwfpZvxSCN1_bt5t5jveDfdCelRJsCpnmkakf/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Produksi", url:LOOKER+"613d99bb-22a8-462a-ba0a-652dbcd96eb2/page/page_12345", tinggi:540}
+          ]
+        };
+      }
+      if (id === "hasil-tangkapan") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Hasil Tangkapan (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLSdCYiSd3YuoI_j1wSu5O-WY2GZQSimDw6AFsWO1fVWCGcKK1g/viewform?usp=sharing&ouid=102281905576152830123", utama:true},
+            {label:"Lihat Spreadsheet Hasil Tangkapan", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vS6T4dKZaicHJD3ctZCKxOu-8UVVZtKzLoYvgh5NzE3No4Yd_KzZKo1XUXCNylCEPzXPCb5paM1tTEI/pubhtml?widget=true&headers=false"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Hasil Tangkapan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vS6T4dKZaicHJD3ctZCKxOu-8UVVZtKzLoYvgh5NzE3No4Yd_KzZKo1XUXCNylCEPzXPCb5paM1tTEI/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Hasil Tangkapan", url:LOOKER+"bfebb953-8a25-463f-a6be-b55401c609bc/page/scQEG", tinggi:540}
+          ]
+        };
+      }
+      if (id === "rencana-kegiatan") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLScl5EVL3dcUtxYxknUMRs-snO8_v9zXp55XbR6pnbSjBVBW5g/viewform?usp=dialog", utama:true},
+            {label:"Lihat Spreadsheet", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vSUNpof9M6a6W0llqOsYKLcJZR7NCmTbESmkUJWK-nQ5D--QP4c6VRsOoBiBNxzY_1-nQVSW5MzeXjB/pubhtml?widget=true&headers=false"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Formulir Rencana Kegiatan", url:"https://docs.google.com/forms/d/e/1FAIpQLScl5EVL3dcUtxYxknUMRs-snO8_v9zXp55XbR6pnbSjBVBW5g/viewform?embedded=true", tinggi:640},
+            {tipe:"embed", label:"Rekap Data Rencana Kegiatan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vSUNpof9M6a6W0llqOsYKLcJZR7NCmTbESmkUJWK-nQ5D--QP4c6VRsOoBiBNxzY_1-nQVSW5MzeXjB/pubhtml?widget=true&headers=false", tinggi:500}
+          ]
+        };
+      }
+      if (id === "rub") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Rencana Usaha Bersama (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLSdgqHUVMrj6CNs_zcUlx6ZzZPXaYoZ6s_nP14SYNif30atuyA/viewform?usp=dialog", utama:true},
+            {label:"Lihat Spreadsheet Rencana Usaha Bersama", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vR5zj14N_groX6M8BI8SzHKieaqrc_4FjXojbk2tlUtPD3C3C1bEvu-PiU0v9lORxKuksTOBgE85VNP/pubhtml?widget=true&headers=false"},
+            {label:"Isi Form Kepuasan Web", url:"https://docs.google.com/forms/d/e/1FAIpQLSdgwpB6Cn3tg2-IcV9b7xaIU0V_bj-t4qq_2Bgq-sEHtwo98g/viewform?usp=dialog"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Rencana Usaha Bersama (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vR5zj14N_groX6M8BI8SzHKieaqrc_4FjXojbk2tlUtPD3C3C1bEvu-PiU0v9lORxKuksTOBgE85VNP/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Rencana Usaha Bersama", url:LOOKER+"20daad80-8016-4f97-a6d5-65999fc6be43/page/page_12345", tinggi:540},
+            {tipe:"embed", label:"Formulir Tingkat Kepuasan Web", url:"https://docs.google.com/forms/d/e/1FAIpQLSdgwpB6Cn3tg2-IcV9b7xaIU0V_bj-t4qq_2Bgq-sEHtwo98g/viewform?embedded=true", tinggi:640},
+            {tipe:"embed", label:"Rekap Data Tingkat Kepuasan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vR5zj14N_groX6M8BI8SzHKieaqrc_4FjXojbk2tlUtPD3C3C1bEvu-PiU0v9lORxKuksTOBgE85VNP/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Tingkat Kepuasan", url:LOOKER+"841ee9cb-c784-4fb9-af71-835791134cf9/page/page_12345", tinggi:540}
+          ]
+        };
+      }
+      if (id === "inventaris") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Inventaris Kelompok (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLSdhi_BS4_bQzxI0gqHgiQYzh7gzX8ylM2giq6C36hg1y2ljIA/viewform?usp=sharing&ouid=105407487912788051624", utama:true},
+            {label:"Lihat Spreadsheet Inventaris", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vSqgNUH-wVH64OLMrBWJdJaO3hrQwqpA-qM8y0gwXNSpTpF7Q-gu9lrXz9OPQ0--W3HQ-GWcoz1yXcu/pubhtml?widget=true&headers=false"},
+            {label:"Isi Form Kepuasan Web", url:"https://docs.google.com/forms/d/e/1FAIpQLScr2VLH2rU7fgEqA5BSSmb4wyHotrcJgHeuONj7MDxYcCH-BA/viewform?usp=header"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Inventaris Kelompok (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vSqgNUH-wVH64OLMrBWJdJaO3hrQwqpA-qM8y0gwXNSpTpF7Q-gu9lrXz9OPQ0--W3HQ-GWcoz1yXcu/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Inventaris Kelompok", url:LOOKER+"94a4dbd8-d215-4d28-ab88-5c111f81847b/page/page_12345", tinggi:540},
+            {tipe:"embed", label:"Formulir Tingkat Kepuasan Web", url:"https://docs.google.com/forms/d/e/1FAIpQLScr2VLH2rU7fgEqA5BSSmb4wyHotrcJgHeuONj7MDxYcCH-BA/viewform?embedded=true", tinggi:640},
+            {tipe:"embed", label:"Rekap Data Tingkat Kepuasan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vSGvA8JOfDpm8tbJfpveC9LAHdZqPVIxtn_HBlNChHmGg9dYTKmA412FmDeP-uGuPT-PaanT8ZfrGZE/pubhtml?widget=true&headers=false", tinggi:500}
+          ]
+        };
+      }
+      if (id === "iuran") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Iuran Kelompok (Tab Baru)", url:"https://forms.gle/4vTSVT7mMXhbCb718", utama:true},
+            {label:"Lihat Spreadsheet Iuran", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTb-5ABMx-95whOeLNmMhtKrnj_TC2LbecmKeDHagWiQsl6p6VQ6_YCmO6AiQP7xTqA6uU4S826UcG3/pubhtml?widget=true&headers=false"},
+            {label:"Isi Form Kepuasan Web", url:"https://forms.gle/Wt45eghPkPhiHqNeA"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Iuran Kelompok (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTb-5ABMx-95whOeLNmMhtKrnj_TC2LbecmKeDHagWiQsl6p6VQ6_YCmO6AiQP7xTqA6uU4S826UcG3/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Iuran Kelompok", url:LOOKER+"194d6a77-0f8c-45ec-952c-3cced2a3a5aa/page/n8WEG", tinggi:540},
+            {tipe:"embed", label:"Formulir Tingkat Kepuasan Iuran Kelompok", url:"https://docs.google.com/forms/d/e/1FAIpQLSerVUdDPhuKHEbcIFBEcSqG_wd2lnv5lMwqD-_ScW-rzRU_XQ/viewform?embedded=true", tinggi:640},
+            {tipe:"embed", label:"Rekap Data Tingkat Kepuasan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTU60ANC64-qpsyN4HQIqJcf0J4aqFq_2WKtrqUs__osxEVvBUyccTzYibwvAZeDg14nnnA-0Jbvgyx/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Tingkat Kepuasan", url:LOOKER+"11916aec-73f1-45fb-98f3-d8e4b5a90164/page/UFXEG", tinggi:540}
+          ]
+        };
+      }
+      if (id === "simpanan") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Simpan Pinjam (Tab Baru)", url:"https://forms.gle/cvrsaMmDjBnNjhKn6", utama:true},
+            {label:"Lihat Spreadsheet Simpan Pinjam", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTkZuPEK4JyEGaP0Y2ewf-P0KH9a3-Y8LHUcdPHwcnpgttMkU1De1xHl5RmXIsyRs-aKCgrMkQwm4Dc/pubhtml?widget=true&headers=false"},
+            {label:"Isi Form Kepuasan Web", url:"https://forms.gle/CGrMayT26JzucqA89"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Simpan Pinjam (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTkZuPEK4JyEGaP0Y2ewf-P0KH9a3-Y8LHUcdPHwcnpgttMkU1De1xHl5RmXIsyRs-aKCgrMkQwm4Dc/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Simpan Pinjam", url:LOOKER+"bce90ae4-0b71-41cd-90c5-602c8ef84c40/page/SZYEG", tinggi:540},
+            {tipe:"embed", label:"Formulir Tingkat Kepuasan Simpan Pinjam", url:"https://docs.google.com/forms/d/e/1FAIpQLSetMW0tJJOvDkDlk7nBv2e6utvJBq9CjwowF0CVvC0thyTKOQ/viewform?embedded=true", tinggi:640},
+            {tipe:"embed", label:"Rekap Data Tingkat Kepuasan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vTP2s-iN-BvZ6m4UY7l5G87XeCTjaBTIAewUlrKFwtDVZueELHlrEdzXZwBjdYJLEUlgTOvUxpg0i87/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Tingkat Kepuasan", url:LOOKER+"05aa47d2-3a33-41b8-a66b-86268406a143/page/qgYEG", tinggi:540}
+          ]
+        };
+      }
+      if (id === "aktivitas") {
+        return {
+          id, grup:"Administrasi kelompok", judul, desc,
+          aksi:[
+            {label:"Isi Google Form Aktivitas Kelompok (Tab Baru)", url:"https://docs.google.com/forms/d/e/1FAIpQLSeMl0mcpFXwasv0HaI8m2olR_V3rGj7v9pL4hcGVp6zbV_kkg/viewform?usp=sharing&ouid=105407487912788051624", utama:true},
+            {label:"Lihat Spreadsheet Aktivitas", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8S8ngUFm6UcXuj-lDOeZLrBFwm6NjMexHaH5WS7ZNomYw39JwNpAIdCBbKQBkhZ5f4QXsaxZLdnha/pubhtml?widget=true&headers=false"},
+            {label:"Isi Form Kepuasan Web", url:"https://docs.google.com/forms/d/e/1FAIpQLSeahsaYK1Qize6PG5PCtSFDdLBvs9ZtU-ntxTPjM_e3VgCR-A/viewform?usp=sharing&ouid=105407487912788051624"}
+          ],
+          blok:[
+            {tipe:"embed", label:"Tabel Data Aktivitas Kelompok (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/e/2PACX-1vQ8S8ngUFm6UcXuj-lDOeZLrBFwm6NjMexHaH5WS7ZNomYw39JwNpAIdCBbKQBkhZ5f4QXsaxZLdnha/pubhtml?widget=true&headers=false", tinggi:500},
+            {tipe:"embed", label:"Dashboard Looker Studio Aktivitas Kelompok", url:LOOKER+"1dacb20b-0ac1-4346-8572-d1fb57fb5763/page/page_12345", tinggi:540},
+            {tipe:"embed", label:"Formulir Tingkat Kepuasan Web", url:"https://docs.google.com/forms/d/e/1FAIpQLSeahsaYK1Qize6PG5PCtSFDdLBvs9ZtU-ntxTPjM_e3VgCR-A/viewform?embedded=true", tinggi:640},
+            {tipe:"embed", label:"Rekap Data Tingkat Kepuasan (Spreadsheet)", url:"https://docs.google.com/spreadsheets/d/1vtlshsHlp1k8pl8RnflbWPlXldLOlUiwmUj7Uv90Z4c/preview", tinggi:500}
+          ]
+        };
+      }
+      return {
+        id, grup:"Administrasi kelompok", judul, desc,
+        blok:[{tipe:"embed", label:"Formulir pengisian", url:"", tinggi:640},
+              {tipe:"embed", label:"Rekap data", url:"", tinggi:480}]
+      };
+    })
+  ]
+};
+
+/* ============================ IKON SVG ============================ */
+const ICONS = {
+  profil: `<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>`,
+  sejarah: `<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>`,
+  "data-dasar": `<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/>`,
+  keanggotaan: `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  komoditas: `<path d="M6.5 12c.94-3.46 4.94-6 8.5-6 3.56 0 6.06 2.54 7 6-.94 3.46-3.44 6-7 6-3.56 0-7.56-2.54-8.5-6Z"/><path d="M18 12v.5"/><path d="M2 8l4 4-4 4"/>`,
+  pendaftaran: `<path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11h-6"/>`,
+  penilaian: `<path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/>`,
+  agenda: `<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>`,
+  kas: `<rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>`,
+  produksi: `<path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/>`,
+  "hasil-tangkapan": `<circle cx="12" cy="5" r="3"/><path d="M12 22V8"/><path d="M5 12H2a10 10 0 0 0 20 0h-3"/>`,
+  notulen: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>`,
+  "rencana-kegiatan": `<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>`,
+  rub: `<circle cx="12" cy="12" r="9"/><path d="M3.6 9h16.8M3.6 15h16.8"/><path d="M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18"/>`,
+  ruk: `<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>`,
+  inventaris: `<path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/>`,
+  iuran: `<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>`,
+  simpanan: `<path d="M3 21h18M4 10h16M5 6l7-3 7 3M6 10v8M10 10v8M14 10v8M18 10v8"/>`,
+  aktivitas: `<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>`
+};
+const svgIcon = (id) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[id] || `<circle cx="12" cy="12" r="4"/>`}</svg>`;
+
+/* ============================ LOGIKA RADIAL & HALAMAN ============================ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const radialNav = $("#radialNav");
+const main = $("#main");
+const groups = [...new Set(CONFIG.halaman.map(h => h.grup))];
+let activeGroup = groups[0];
+let currentId = CONFIG.halaman[0].id;
+let renderedGroup = null;
+
+function getCoords(count){
+  const vh = window.innerHeight;
+  const open = document.body.classList.contains("radial-open");
+  const navH = Math.min(680, Math.max(480, vh - 32));
+  const cx = 38;
+  const cy = navH / 2;
+  const rInner = 82;
+  const spanSin = count > 8 ? 1.84 : 1.72;
+  const maxR = Math.floor((navH - 72) / spanSin);
+  const closedR = count > 8 ? 202 : 170;
+  const rOuter = open ? Math.min(256, maxR) : Math.min(closedR, maxR);
+  return { navH, cx, cy, rInner, rOuter, open, many: count > 8 };
+}
+
+function calcNodes(items, cx, cy, rOuter){
+  const n = items.length;
+  const maxSin = n > 8 ? 0.92 : 0.86;
+  const minSin = -maxSin;
+  return items.map((h, i) => {
+    const t = n === 1 ? 0.5 : i / (n - 1);
+    const angle = Math.asin(minSin + (maxSin - minSin) * t);
+    return {
+      h,
+      x: cx + rOuter * Math.cos(angle),
+      y: cy + rOuter * Math.sin(angle)
+    };
+  });
+}
+
+function renderRadial(forceRebuild = false){
+  const items = CONFIG.halaman.filter(h => h.grup === activeGroup);
+  const { navH, cx, cy, rInner, rOuter, open, many } = getCoords(items.length);
+  radialNav.style.height = navH + "px";
+  radialNav.classList.toggle("compact-dots", many);
+
+  const nodes = calcNodes(items, cx, cy, rOuter);
+
+  if(forceRebuild || renderedGroup !== activeGroup){
+    renderedGroup = activeGroup;
+
+    const gCoords = groups.map((g, idx) => {
+      const ang = idx === 0 ? -0.96 : 0.96;
+      return { g, x: cx + rInner * Math.cos(ang), y: cy + rInner * Math.sin(ang) };
+    });
+
+    const spokesSvg = nodes.map(({h, x, y}) =>
+      `<line class="spoke${h.id === currentId ? " active" : ""}" data-id="${h.id}" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`
+    ).join("");
+
+    const groupsHtml = gCoords.map(({g, x, y}, idx) => `
+      <button type="button" class="group-node${g === activeGroup ? " active" : ""}"
+        style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px"
+        data-group="${esc(g)}" aria-label="${esc(g)}">
+        ${idx === 0
+          ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>`
+          : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>`}
+        <span class="group-tag">${esc(g)}</span>
+      </button>
+    `).join("");
+
+    const nodesHtml = nodes.map(({h, x, y}) => `
+      <a class="radial-node" href="#${h.id}" data-id="${h.id}"
+         style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px"
+         ${h.id === currentId ? 'aria-current="page"' : ""}>
+        <span class="node-dot">${svgIcon(h.id)}</span>
+        <span class="node-label">${esc(h.judul)}</span>
+      </a>
+    `).join("");
+
+    radialNav.innerHTML = `
+      <div class="radial-dome"></div>
+      <div class="orbit-circle orbit-inner-ring" style="left:${cx}px;top:${cy}px;width:${rInner*2}px;height:${rInner*2}px"></div>
+      <div class="orbit-circle orbit-outer-ring" id="orbitOuter" style="left:${cx}px;top:${cy}px;width:${rOuter*2}px;height:${rOuter*2}px"></div>
+      <svg class="radial-svg" aria-hidden="true">${spokesSvg}</svg>
+      <button type="button" class="radial-core" id="radialCore"
+        style="left:${cx}px;top:${cy}px;transform:translate(-50%,-50%)"
+        aria-expanded="${open}" aria-label="${open ? "Tutup menu radial" : "Buka semua label menu radial"}">
+        <span class="core-pulse"></span>
+        <strong>KUB</strong>
+        <span>${open ? "Tutup" : "Menu"}</span>
+      </button>
+      ${groupsHtml}
+      ${nodesHtml}
+    `;
+
+    $("#radialCore").addEventListener("click", () => toggleRadial());
+    radialNav.querySelectorAll(".group-node").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeGroup = btn.dataset.group;
+        renderRadial(true);
+      });
+    });
+  } else {
+    const outerRing = $("#orbitOuter");
+    if(outerRing){
+      outerRing.style.left = cx + "px";
+      outerRing.style.top = cy + "px";
+      outerRing.style.width = (rOuter * 2) + "px";
+      outerRing.style.height = (rOuter * 2) + "px";
+    }
+    const core = $("#radialCore");
+    if(core){
+      core.style.top = cy + "px";
+      core.setAttribute("aria-expanded", open);
+      core.setAttribute("aria-label", open ? "Tutup menu radial" : "Buka semua label menu radial");
+      core.querySelector("span:last-child").textContent = open ? "Tutup" : "Menu";
+    }
+    nodes.forEach(({h, x, y}) => {
+      const nodeEl = radialNav.querySelector(`.radial-node[data-id="${h.id}"]`);
+      if(nodeEl){
+        nodeEl.style.left = x.toFixed(1) + "px";
+        nodeEl.style.top = y.toFixed(1) + "px";
+        if(h.id === currentId) nodeEl.setAttribute("aria-current", "page");
+        else nodeEl.removeAttribute("aria-current");
+      }
+      const spokeEl = radialNav.querySelector(`.spoke[data-id="${h.id}"]`);
+      if(spokeEl){
+        spokeEl.setAttribute("y1", cy);
+        spokeEl.setAttribute("x2", x.toFixed(1));
+        spokeEl.setAttribute("y2", y.toFixed(1));
+        spokeEl.classList.toggle("active", h.id === currentId);
+      }
+    });
+  }
+
+  $("#radialHint").querySelector("span").textContent = open ? "Ringkas Menu" : "Buka Semua Label";
+}
+
+function renderMobileMenu(){
+  const items = CONFIG.halaman.filter(h => h.grup === activeGroup);
+  $("#mobilePanel").innerHTML = `
+    <div class="mobile-tabs">
+      ${groups.map(g => `<button type="button" class="mobile-tab${g === activeGroup ? " active" : ""}" data-group="${esc(g)}">${esc(g)}</button>`).join("")}
+    </div>
+    <div class="mobile-list">
+      ${items.map(h => `
+        <a class="mobile-item" href="#${h.id}" ${h.id === currentId ? 'aria-current="page"' : ""}>
+          ${svgIcon(h.id)}
+          <span>${esc(h.judul)}</span>
+        </a>
+      `).join("")}
+    </div>
+  `;
+  $("#mobilePanel").querySelectorAll(".mobile-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      activeGroup = btn.dataset.group;
+      renderMobileMenu();
+    });
+  });
+  $("#mobilePanel").querySelectorAll(".mobile-item").forEach(a => {
+    a.addEventListener("click", closeMobile);
+  });
+}
+
+function toggleRadial(force){
+  const open = typeof force === "boolean" ? force : !document.body.classList.contains("radial-open");
+  document.body.classList.toggle("radial-open", open);
+  renderRadial(false);
+}
+
+function closeMobile(){
+  document.body.classList.remove("mobile-open");
+  $("#mobileFab").setAttribute("aria-expanded", "false");
+}
+
+function exitFullscreen(){
+  main.querySelectorAll(".blok.fullscreen").forEach(c => {
+    c.classList.remove("fullscreen");
+    const btn = c.querySelector(".fs-toggle");
+    if(btn){
+      btn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Perbesar`;
+    }
+  });
+  document.body.classList.remove("has-fs");
+}
+
+function frame(b, idx){
+  const lbl = b.label ? esc(b.label) : "Tampilan Data & Formulir";
+  const reloadBtn = b.url ? `<button type="button" class="tool-btn reload-btn" title="Muat ulang data tampilan ini">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Muat Ulang</button>` : "";
+  const openLink = b.url ? `<a class="tool-btn" href="${esc(b.url)}" target="_blank" rel="noopener noreferrer" title="Buka di tab baru">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>Tab Baru</a>` : "";
+  const fsBtn = b.url ? `<button type="button" class="tool-btn fs-toggle" data-idx="${idx}" title="Perbesar tampilan">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Perbesar</button>` : "";
+
+  const header = `<div class="blok-head"><div class="blok-title">${lbl}</div><div class="blok-tools">${reloadBtn}${openLink}${fsBtn}</div></div>`;
+
+  if(!b.url){
+    return `<section class="blok">${header}<div class="frame kosong">
+      <strong>Tautan belum diisi</strong>
+      <span>Tempel URL embed Google Form / Spreadsheet / Looker Studio di <code>CONFIG</code> pada file HTML ini.</span>
+    </div></section>`;
+  }
+  return `<section class="blok">${header}<div class="frame" style="height:${b.tinggi||480}px">
+    <div class="frame-loader"><div class="spinner"></div><span>Memuat tampilan...</span></div>
+    <iframe src="${esc(b.url)}" title="${esc(b.label||"Konten")}" loading="lazy" allowfullscreen></iframe>
+  </div></section>`;
+}
+
+function renderSearchList(query = ""){
+  const q = query.trim().toLowerCase();
+  const filtered = CONFIG.halaman.filter(h =>
+    !q || h.judul.toLowerCase().includes(q) || h.grup.toLowerCase().includes(q) || h.desc.toLowerCase().includes(q)
+  );
+  if(!filtered.length) return `<div class="sd-empty">Menu tidak ditemukan</div>`;
+  let html = "";
+  groups.forEach(g => {
+    const items = filtered.filter(h => h.grup === g);
+    if(items.length){
+      html += `<div class="sd-group">${esc(g)}</div>`;
+      html += items.map(h => `
+        <a class="sd-item" href="#${h.id}" ${h.id === currentId ? 'aria-current="page"' : ""}>
+          ${svgIcon(h.id)}<span>${esc(h.judul)}</span>
+        </a>`).join("");
+    }
+  });
+  return html;
+}
+
+function renderPage(id){
+  const idx = CONFIG.halaman.findIndex(x => x.id === id);
+  const currentIdx = idx >= 0 ? idx : 0;
+  const h = CONFIG.halaman[currentIdx];
+
+  currentId = h.id;
+  activeGroup = h.grup;
+  document.title = h.judul + " | " + CONFIG.judul;
+  $("#mobTitle").textContent = h.judul;
+  $("#mobSub").textContent = h.grup;
+
+  const prev = CONFIG.halaman[(currentIdx - 1 + CONFIG.halaman.length) % CONFIG.halaman.length];
+  const next = CONFIG.halaman[(currentIdx + 1) % CONFIG.halaman.length];
+
+  const aksiHtml = h.aksi ? `<div class="aksi">` + h.aksi.map(a =>
+    a.url ? `<a class="tombol${a.utama?" utama":""}" href="${esc(a.url)}" target="_blank" rel="noopener noreferrer">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+      ${esc(a.label)}</a>`
+          : `<span class="tombol mati">${esc(a.label)}</span>`).join("") + `</div>` : "";
+
+  let blocksHtml = "", i = 0;
+  while(i < h.blok.length){
+    if(h.blok[i].kolom && h.blok[i+1] && h.blok[i+1].kolom){
+      blocksHtml += `<div class="grid2">${frame(h.blok[i], i)}${frame(h.blok[i+1], i+1)}</div>`;
+      i += 2;
+    } else {
+      blocksHtml += frame(h.blok[i], i);
+      i++;
+    }
+  }
+
+  main.innerHTML = `
+    <div class="topbar">
+      <div class="brand-pill">
+        <b>KUB</b>
+        <span>${esc(CONFIG.judul)}<small>/ ${esc(CONFIG.sub)}</small></span>
+      </div>
+      <div class="topbar-right">
+        <div class="quick-search" id="quickSearch">
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="search" id="searchInput" placeholder="Cari menu halaman..." autocomplete="off" aria-label="Cari menu halaman">
+          </div>
+          <div class="search-dropdown" id="searchDropdown">${renderSearchList()}</div>
+        </div>
+        <div class="nav-arrows">
+          <a class="nav-btn" href="#${prev.id}" title="${esc(prev.judul)}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            Sebelumnya
+          </a>
+          <a class="nav-btn" href="#${next.id}" title="${esc(next.judul)}">
+            Berikutnya
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <header class="hero">
+      <div class="hero-meta">
+        <div class="hero-badge">${esc(h.grup)}</div>
+        <span class="hero-step">Halaman ${currentIdx + 1} / ${CONFIG.halaman.length}</span>
+      </div>
+      <h1>${esc(h.judul)}</h1>
+      <p>${esc(h.desc)}</p>
+      ${aksiHtml}
+    </header>
+
+    ${blocksHtml}
+  `;
+
+  main.querySelectorAll(".blok").forEach(card => {
+    const iframe = card.querySelector("iframe");
+    const loader = card.querySelector(".frame-loader");
+    const reloadBtn = card.querySelector(".reload-btn");
+    if(iframe && loader){
+      const hideLoader = () => {
+        loader.classList.add("done");
+        if(reloadBtn) reloadBtn.classList.remove("spinning");
+      };
+      iframe.addEventListener("load", hideLoader);
+      setTimeout(hideLoader, 6000);
+      if(reloadBtn){
+        reloadBtn.addEventListener("click", () => {
+          loader.classList.remove("done");
+          reloadBtn.classList.add("spinning");
+          iframe.src = iframe.src;
+          setTimeout(hideLoader, 6000);
+        });
+      }
+    }
+  });
+
+  main.querySelectorAll(".fs-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const card = btn.closest(".blok");
+      const isFs = card.classList.toggle("fullscreen");
+      document.body.classList.toggle("has-fs", isFs);
+      btn.innerHTML = isFs
+        ? `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>Kecilkan`
+        : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>Perbesar`;
+    });
+  });
+
+  const qs = $("#quickSearch");
+  const sInput = $("#searchInput");
+  const sDrop = $("#searchDropdown");
+  sInput.addEventListener("focus", () => qs.classList.add("open"));
+  sInput.addEventListener("input", () => {
+    sDrop.innerHTML = renderSearchList(sInput.value);
+    qs.classList.add("open");
+  });
+
+  document.body.classList.remove("radial-open", "has-fs");
+  closeMobile();
+  renderRadial(renderedGroup !== activeGroup);
+  renderMobileMenu();
+  window.scrollTo(0,0);
+}
+
+function route(){
+  renderPage(location.hash.slice(1) || CONFIG.halaman[0].id);
+}
+
+$("#radialBackdrop").addEventListener("click", () => toggleRadial(false));
+$("#fsBackdrop").addEventListener("click", exitFullscreen);
+$("#radialHint").addEventListener("click", () => toggleRadial());
+$("#mobileFab").addEventListener("click", () => {
+  const open = document.body.classList.toggle("mobile-open");
+  $("#mobileFab").setAttribute("aria-expanded", open);
+});
+$("#mobBtn").addEventListener("click", () => {
+  const open = document.body.classList.toggle("mobile-open");
+  $("#mobileFab").setAttribute("aria-expanded", open);
+});
+$("#mobileSheet").addEventListener("click", (e) => {
+  if(e.target === $("#mobileSheet")) closeMobile();
+});
+document.addEventListener("click", (e) => {
+  const qs = $("#quickSearch");
+  if(qs && !qs.contains(e.target)) qs.classList.remove("open");
+});
+window.addEventListener("keydown", (e) => {
+  if(e.key === "Escape"){
+    toggleRadial(false);
+    closeMobile();
+    exitFullscreen();
+    const qs = $("#quickSearch");
+    if(qs) qs.classList.remove("open");
+  }
+});
+window.addEventListener("resize", () => renderRadial(false));
+window.addEventListener("hashchange", route);
+
+route();
+</script>
+</body>
+</html>
